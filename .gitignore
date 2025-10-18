@@ -2,3 +2,4 @@ temp
 local-*
 __*
 .env*
+.gitignore

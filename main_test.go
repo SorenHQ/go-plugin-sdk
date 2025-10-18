@@ -26,7 +26,7 @@ func TestMain(t *testing.T) {
 		Version: "1.1.0",
 		Author:  "Mate-Soren",
 		Requirements: &sdkv2.Requirements{
-			ReplyTo:    fmt.Sprintf("soren.v2.%s.intro.requirements", sdkInstance.GetPluginID()),
+			ReplyTo:    "init.config",
 			Jsonui:     map[string]any{"type": "Control", "scope": "#/properties/apiKey"},
 			Jsonschema: map[string]any{"properties": map[string]any{"apiKey": map[string]any{"type": "string"}}},
 		},
