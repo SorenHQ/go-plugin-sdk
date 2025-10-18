@@ -6,6 +6,7 @@ import (
 	"time"
 
 	nats "github.com/nats-io/nats.go"
+	"github.com/sorenhq/go-plugin-sdk/gosdk/models"
 )
 
 // EventLogger handles logging and event emission
@@ -19,11 +20,11 @@ func NewEventLogger(sdk *SorenSDK) *EventLogger {
 }
 
 // Log sends a log event to the Soren platform
-func (e *EventLogger) Log(level, message string, details map[string]interface{}) error {
-	event := PluginEvent{
-		Event:     "log",
+func (e *EventLogger) Log(source string, level models.LogLevel, message string, details map[string]any) error {
+	event := models.PluginEvent{
+		Event:     models.EventTypeLog,
 		Level:     level,
-		Source:    fmt.Sprintf("remote-plugin/%s", e.sdk.pluginID),
+		Source:    fmt.Sprintf("%s - %s", e.sdk.pluginID,source),
 		Message:   message,
 		Timestamp: uint64(time.Now().Unix()),
 		Details:   details,
@@ -32,32 +33,12 @@ func (e *EventLogger) Log(level, message string, details map[string]interface{})
 	return e.sendEvent(event)
 }
 
-// LogInfo sends an info level log
-func (e *EventLogger) LogInfo(message string, details map[string]interface{}) error {
-	return e.Log("INFO", message, details)
-}
-
-// LogDebug sends a debug level log
-func (e *EventLogger) LogDebug(message string, details map[string]interface{}) error {
-	return e.Log("DEBUG", message, details)
-}
-
-// LogWarning sends a warning level log
-func (e *EventLogger) LogWarning(message string, details map[string]interface{}) error {
-	return e.Log("WARNING", message, details)
-}
-
-// LogError sends an error level log
-func (e *EventLogger) LogError(message string, details map[string]interface{}) error {
-	return e.Log("ERROR", message, details)
-}
-
 // EmitEvent sends a custom event to the Soren platform
-func (e *EventLogger) EmitEvent(eventType string, data map[string]interface{}) error {
-	event := PluginEvent{
+func (e *EventLogger) EmitEvent(eventType models.EventType, data map[string]any) error {
+	event := models.PluginEvent{
 		Event:     eventType,
-		Level:     "INFO",
-		Source:    fmt.Sprintf("remote-plugin/%s", e.sdk.pluginID),
+		Level:     models.LogLevelInfo,
+		Source:    e.sdk.pluginID,
 		Message:   fmt.Sprintf("Event: %s", eventType),
 		Timestamp: uint64(time.Now().Unix()),
 		Details:   data,
@@ -67,12 +48,12 @@ func (e *EventLogger) EmitEvent(eventType string, data map[string]interface{}) e
 }
 
 // sendEvent sends an event to the Soren platform
-func (e *EventLogger) sendEvent(event PluginEvent) error {
+func (e *EventLogger) sendEvent(event models.PluginEvent) error {
 	if e.sdk.eventChannel == "" {
 		return fmt.Errorf("event channel not configured")
 	}
 
-	body, err := json.Marshal([]PluginEvent{event})
+	body, err := json.Marshal([]models.PluginEvent{event})
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
@@ -104,7 +85,7 @@ func (e *EventLogger) sendEvent(event PluginEvent) error {
 }
 
 // SendMultipleEvents sends multiple events in a single request
-func (e *EventLogger) SendMultipleEvents(events ...PluginEvent) error {
+func (e *EventLogger) SendMultipleEvents(events ...models.PluginEvent) error {
 	if e.sdk.eventChannel == "" {
 		return fmt.Errorf("event channel not configured")
 	}
@@ -139,4 +120,3 @@ func (e *EventLogger) SendMultipleEvents(events ...PluginEvent) error {
 
 	return nil
 }
-

@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 
 	sdkv2 "github.com/sorenhq/go-plugin-sdk/gosdk"
+	models "github.com/sorenhq/go-plugin-sdk/gosdk/models"
 )
 
 func TestMain(t *testing.T) {
@@ -21,18 +22,18 @@ func TestMain(t *testing.T) {
 	}
 	defer sdkInstance.Close()
 	plugin := sdkv2.NewPlugin(sdkInstance)
-	plugin.SetIntro(sdkv2.PluginIntro{
+	plugin.SetIntro(models.PluginIntro{
 		Name:    "Code Analysis Plugin",
 		Version: "1.1.0",
-		Author:  "Mate-Soren",
-		Requirements: &sdkv2.Requirements{
+		Author:  "Soren Team",
+		Requirements: &models.Requirements{
 			ReplyTo:    "init.config",
 			Jsonui:     map[string]any{"type": "Control", "scope": "#/properties/apiKey"},
 			Jsonschema: map[string]any{"properties": map[string]any{"apiKey": map[string]any{"type": "string"}}},
 		},
 	},nil)
 
-	plugin.SetSettings(&sdkv2.Settings{
+	plugin.SetSettings(&models.Settings{
 		ReplyTo: "settings.config.submit",
 		Jsonui: map[string]any{
 			"type":  "Control",
@@ -49,10 +50,10 @@ func TestMain(t *testing.T) {
 			"required": []string{"start"},
 		},
 	}, settingsUpdateHandler)
-	plugin.AddActions([]sdkv2.Action{{
+	plugin.AddActions([]models.Action{{
 		Method: "analyse.code",
 		Title:  "Code Analyser",
-		Form: sdkv2.ActionFormBuilder{
+		Form: models.ActionFormBuilder{
 			Jsonui:     map[string]any{"type": "Control", "scope": "#/properties/reponame"},
 			Jsonschema: map[string]any{"properties": map[string]any{"reponame": map[string]any{"type": "string"}}},
 		},
@@ -60,10 +61,10 @@ func TestMain(t *testing.T) {
 			// for example in this step we register a job in local database or external system - mae a scan in Joern
 			return map[string]any{"jobId": "AAAAA-2222"}
 		},
-	}, sdkv2.Action{
+	}, models.Action{
 		Method: "scan.code",
 		Title:  "Code Scanner",
-		Form: sdkv2.ActionFormBuilder{
+		Form: models.ActionFormBuilder{
 			Jsonui:     map[string]any{"type": "Control", "scope": "#/properties/reponame"},
 			Jsonschema: map[string]any{"properties": map[string]any{"reponame": map[string]any{"type": "string"}}},
 		},
@@ -72,6 +73,8 @@ func TestMain(t *testing.T) {
 			return map[string]any{"jobId": "B-AAAAA-33321022"}
 		},
 	}})
+	event:=sdkv2.NewEventLogger(sdkInstance)
+	event.Log("remote-mate-pc",models.LogLevelInfo,"start plugin",nil)
 	plugin.Start()
 	select {}
 }
