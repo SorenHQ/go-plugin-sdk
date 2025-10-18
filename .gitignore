@@ -1,5 +1,5 @@
 temp
 local-*
 __*
-.env*
+.env
 .gitignore
