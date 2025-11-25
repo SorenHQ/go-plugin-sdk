@@ -126,8 +126,8 @@ func (s *SorenSDK) makeIntroSubject() string {
 	return fmt.Sprintf("soren.v2.%s.@intro", s.pluginID)
 }
 // makeActionSubject creates a subject for action execution
-func (s *SorenSDK) makeActionSubject(jobID, action string) string {
-	return fmt.Sprintf("soren.cpu.%s.%s.%s", s.pluginID, jobID, action)
+func (s *SorenSDK) makeActionCpu(action string) string {
+	return fmt.Sprintf("soren.cpu.%s.%s", s.pluginID, action)
 }
 
 // makeJobSubject creates a subject for job updates

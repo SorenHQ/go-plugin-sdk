@@ -6,6 +6,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/nats-io/nats.go"
+	"github.com/sorenhq/go-plugin-sdk/logtool"
 )
 
 
@@ -43,6 +44,7 @@ func (p *Plugin)IntroHandler() error{
 func (p *Plugin)SettingsHandler()  error{
 	// show settings form handler
 	p.sdk.conn.Subscribe(p.sdk.makeSettingsSubject(),func(msg *nats.Msg) {
+		logtool.GetLogger().Info("Settings Called")
 		// Handle the settings message
 		if p.Settings==nil{
 			msg.Respond(nil)
@@ -89,7 +91,7 @@ func (p *Plugin)ActionsHandler() {
 		msg.Respond(listBytes)
 	})
 	for _,action:=range p.Actions{
-		p.sdk.conn.Subscribe(p.sdk.makeFormSubject(action.Method),func(msg *nats.Msg) {
+		_,err:=p.sdk.conn.Subscribe(p.sdk.makeFormSubject(action.Method),func(msg *nats.Msg) {
 			// Handle the action message
 			formBody,err:=sonic.Marshal(action.Form)
 			if err!=nil{
@@ -98,8 +100,13 @@ func (p *Plugin)ActionsHandler() {
 			}
 			msg.Respond(formBody)
 		})
+		if err!=nil{
+			log.Printf("subscribe error: %s on %s\n",err.Error(),p.sdk.makeFormSubject(action.Method))
+			return 
+		}
+		log.Printf("Form Builder Service : %s",p.sdk.makeFormSubject(action.Method))
 		// request handler make a jobId and respond it with the result
-		p.sdk.conn.Subscribe(p.sdk.makeSubject(action.Method),func(msg *nats.Msg) {
+		_,err=p.sdk.conn.Subscribe(p.sdk.makeActionCpu(action.Method),func(msg *nats.Msg) {
 			result:=action.RequestHandler(msg.Data)
 			resByte,err:=sonic.Marshal(result)
 			if err!=nil{
@@ -108,6 +115,11 @@ func (p *Plugin)ActionsHandler() {
 			}
 			msg.Respond(resByte)
 		})
+		if err!=nil{
+			log.Printf("subscribe error: %s on %s\n",err.Error(),p.sdk.makeActionCpu(action.Method))
+			return 
+		}
+		log.Printf("Subscribed Action : %s",p.sdk.makeActionCpu(action.Method))
 	}
 }
 
