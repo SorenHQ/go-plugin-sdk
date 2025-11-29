@@ -1,6 +1,7 @@
 package sdkv2
 
 import (
+	"context"
 	"log"
 
 	"github.com/bytedance/sonic"
@@ -18,6 +19,9 @@ func NewPlugin(sdk *SorenSDK) *Plugin {
 	return &Plugin{
 		sdk: sdk,
 	}
+}
+func (p *Plugin) GetContext() context.Context {
+	return p.sdk.ctx
 }
 func (p *Plugin) SetSettings(settings *models.Settings, handler func([]byte) any) {
 	p.Settings = settings
@@ -60,3 +64,5 @@ func (p *Plugin) Progress(jobId string, command models.Command, data models.JobP
 	}
 	p.sdk.conn.Publish(sub, dataByte)
 }
+
+

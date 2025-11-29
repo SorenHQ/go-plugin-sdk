@@ -29,11 +29,6 @@ func TestMain(t *testing.T) {
 		Name:    "Code Analysis Plugin",
 		Version: "1.1.1",
 		Author:  "Soren Team",
-		// Requirements: &models.Requirements{
-		// 	ReplyTo:    "init.config",
-		// 	Jsonui:     map[string]any{"type": "Control", "scope": "#/properties/github_access_token"},
-		// 	Jsonschema: map[string]any{"properties": map[string]any{"github_access_token": map[string]any{"title":"GitHub Access Token","type": "string"}}},
-		// },
 	}, nil)
 
 	plugin.SetSettings(&models.Settings{
@@ -126,7 +121,12 @@ func settingsUpdateHandler(data []byte) any {
 		fmt.Println("Error Unmarshalling Settings:",err)
 		return map[string]any{"status": "error"}
 	}
-	os.WriteFile("my_database.json",data,0644)
+	err=os.WriteFile("my_database.json",data,0644)
+	if err!=nil{
+		fmt.Println("Error Writing Settings to File:", err)
+			return map[string]any{"status": "not_accepted", "error": err.Error()}
+
+	}
 	return map[string]any{"status": "accepted"}
 }
 
