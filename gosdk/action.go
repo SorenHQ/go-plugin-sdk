@@ -6,6 +6,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/sorenhq/go-plugin-sdk/gosdk/models"
+	"github.com/sorenhq/go-plugin-sdk/logtool"
 )
 
 type Plugin struct {
@@ -16,6 +17,7 @@ type Plugin struct {
 }
 
 func NewPlugin(sdk *SorenSDK) *Plugin {
+	logtool.Init("SOREN-SDK", true)
 	return &Plugin{
 		sdk: sdk,
 	}
@@ -51,7 +53,7 @@ func (p *Plugin) Start() error {
 		return err
 	}
 	p.ActionsHandler()
-	
+
 	<-p.sdk.ctx.Done()
 	log.Println("Plugin context done, exiting plugin:", p.Intro.Name)
 	return nil
