@@ -51,7 +51,9 @@ func (p *Plugin) Start() error {
 		return err
 	}
 	p.ActionsHandler()
-
+	
+	<-p.sdk.ctx.Done()
+	log.Println("Plugin context done, exiting plugin:", p.Intro.Name)
 	return nil
 }
 
