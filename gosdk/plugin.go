@@ -29,13 +29,14 @@ func (p *Plugin)IntroHandler() error{
 				msg.Respond([]byte(`{"status":"not implemented"}`))
 				return
 			}
-			result:=p.Intro.Requirements.Handler(msg.Data)
-			resByte,err:=sonic.Marshal(result)
-			if err!=nil{
-				log.Println("submit required info on init plugin error:",err)
-				return 
-			}
-			msg.Respond(resByte)
+			p.Intro.Requirements.Handler(msg)
+			// result:=
+			// resByte,err:=sonic.Marshal(result)
+			// if err!=nil{
+			// 	log.Println("submit required info on init plugin error:",err)
+			// 	return 
+			// }
+			// msg.Respond(resByte)
 		})
 	}
 	return  nil
@@ -67,13 +68,13 @@ func (p *Plugin)SettingsHandler()  error{
 				msg.Respond([]byte(`{"status":"not implemented"}`))
 				return
 			}
-			result:=p.Settings.Handler(msg.Data)
-			resByte,err:=sonic.Marshal(result)
-			if err!=nil{
-				log.Println("settings handler response error:",err)
-				return 
-			}
-			msg.Respond(resByte)
+			p.Settings.Handler(msg)
+			// resByte,err:=sonic.Marshal(result)
+			// if err!=nil{
+			// 	log.Println("settings handler response error:",err)
+			// 	return 
+			// }
+			// msg.Respond(resByte)
 		})
 	}
 	
@@ -107,13 +108,14 @@ func (p *Plugin)ActionsHandler() {
 		log.Printf("Form Builder Service : %s",p.sdk.makeFormSubject(action.Method))
 		// request handler make a jobId and respond it with the result
 		_,err=p.sdk.conn.Subscribe(p.sdk.makeActionCpu(action.Method),func(msg *nats.Msg) {
-			result:=action.RequestHandler(msg.Data)
-			resByte,err:=sonic.Marshal(result)
-			if err!=nil{
-				log.Println("action response ",action.Title," error:",err)
-				return 
-			}
-			msg.Respond(resByte)
+			action.RequestHandler(msg)
+			// result:=
+			// resByte,err:=sonic.Marshal(result)
+			// if err!=nil{
+			// 	log.Println("action response ",action.Title," error:",err)
+			// 	return 
+			// }
+			// msg.Respond(resByte)
 		})
 		if err!=nil{
 			log.Printf("subscribe error: %s on %s\n",err.Error(),p.sdk.makeActionCpu(action.Method))

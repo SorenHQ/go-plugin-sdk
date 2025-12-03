@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/bytedance/sonic"
+	"github.com/nats-io/nats.go"
 	"github.com/sorenhq/go-plugin-sdk/gosdk/models"
 	"github.com/sorenhq/go-plugin-sdk/logtool"
 )
@@ -25,7 +26,7 @@ func NewPlugin(sdk *SorenSDK) *Plugin {
 func (p *Plugin) GetContext() context.Context {
 	return p.sdk.ctx
 }
-func (p *Plugin) SetSettings(settings *models.Settings, handler func([]byte) any) {
+func (p *Plugin) SetSettings(settings *models.Settings, handler func(msg *nats.Msg) any) {
 	p.Settings = settings
 	if p.Settings != nil {
 		p.Settings.Handler = handler
@@ -34,7 +35,7 @@ func (p *Plugin) SetSettings(settings *models.Settings, handler func([]byte) any
 func (p *Plugin) SetActions(actions []models.Action) {
 	p.Actions = actions
 }
-func (p *Plugin) SetIntro(intro models.PluginIntro, handler func([]byte) any) {
+func (p *Plugin) SetIntro(intro models.PluginIntro, handler func(msg *nats.Msg) any) {
 	p.Intro = intro
 	if p.Intro.Requirements != nil {
 		p.Intro.Requirements.Handler = handler

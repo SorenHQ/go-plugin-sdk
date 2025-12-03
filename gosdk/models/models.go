@@ -1,7 +1,6 @@
 package models
 
-
-
+import "github.com/nats-io/nats.go"
 
 // PluginIntro represents the plugin introduction response
 // Subject: soren.v2.<PLUGIN_ID>.@intro
@@ -17,7 +16,7 @@ type Requirements struct {
 	ReplyTo    string                `json:"replyTo"`
 	Jsonui     map[string]any        `json:"jsonui"`
 	Jsonschema map[string]any        `json:"jsonschema"`
-	Handler    func(data []byte) any `json:"-"`
+	Handler    func(msg *nats.Msg) any `json:"-"`
 }
 
 // PluginAction represents a single plugin action
@@ -27,7 +26,7 @@ type Action struct {
 	Description    string                `json:"description"`
 	Title          string                `json:"title"`
 	Icon           Icon                  `json:"icon"`
-	RequestHandler func(data []byte) any `json:"-"`
+	RequestHandler func(msg *nats.Msg)any  `json:"-"`
 	Form           ActionFormBuilder     `json:"-"`
 }
 
@@ -43,7 +42,7 @@ type Settings struct {
 	ReplyTo    string                `json:"replyTo"`
 	Jsonui     map[string]any        `json:"jsonui"`
 	Jsonschema map[string]any        `json:"jsonschema"`
-	Handler    func(data []byte) any `json:"-"`
+	Handler    func(msg *nats.Msg) any `json:"-"`
 }
 
 // ActionFormBuilder represents the action form configuration

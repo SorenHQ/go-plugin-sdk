@@ -9,6 +9,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
+	"github.com/nats-io/nats.go"
 
 	sdkv2 "github.com/sorenhq/go-plugin-sdk/gosdk"
 	models "github.com/sorenhq/go-plugin-sdk/gosdk/models"
@@ -81,7 +82,8 @@ func TestMain(t *testing.T) {
 			Jsonui:     map[string]any{"type": "Control", "scope": "#/properties/project"},
 			Jsonschema: map[string]any{"properties": map[string]any{"project": map[string]any{"enum": makeEnumsProject()}}},
 		},
-		RequestHandler: func(data []byte) any {
+		RequestHandler: func(msg *nats.Msg) any {
+			// data:=msg.Data
 			// for example in this step we register a job in local database or external system - mae a scan in Joern
 			uuid,err:=uuid.NewV6()
 			if err!=nil{
@@ -97,7 +99,7 @@ func TestMain(t *testing.T) {
 			Jsonui:     map[string]any{"type": "Control", "scope": "#/properties/reponame"},
 			Jsonschema: map[string]any{"properties": map[string]any{"reponame": map[string]any{"type": "string"}}},
 		},
-		RequestHandler: func(data []byte) any {
+		RequestHandler: func(msg *nats.Msg) any {
 			// for example in this step we register a job in local database or external system - mae a scan in Joern
 			uuid,err:=uuid.NewV6()
 			if err!=nil{
@@ -113,15 +115,15 @@ func TestMain(t *testing.T) {
 	select {}
 }
 
-func settingsUpdateHandler(data []byte) any {
-	fmt.Println("New Update As Settings : ", string(data))
+func settingsUpdateHandler(msg *nats.Msg) any {
+	fmt.Println("New Update As Settings : ", string(msg.Data))
 	settings:=map[string]any{}
-	err:=sonic.Unmarshal(data,&settings)
+	err:=sonic.Unmarshal(msg.Data,&settings)
 	if err!=nil{
 		fmt.Println("Error Unmarshalling Settings:",err)
 		return map[string]any{"status": "error"}
 	}
-	err=os.WriteFile("my_database.json",data,0644)
+	err=os.WriteFile("my_database.json",msg.Data,0644)
 	if err!=nil{
 		fmt.Println("Error Writing Settings to File:", err)
 			return map[string]any{"status": "not_accepted", "error": err.Error()}
