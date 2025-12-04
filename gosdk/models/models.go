@@ -67,7 +67,7 @@ type PluginEvent struct {
 type JobProgress struct {
 	Progress int            `json:"progress" bson:"progress"`
 	Frame    Frame          `json:"frame" bson:"frame"`
-	Details     map[string]any `json:"details" `
+	Details     map[string]any `json:"details"`
 }
 
 type Frame struct {
