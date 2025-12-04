@@ -74,3 +74,16 @@ type Frame struct {
 	Title   string `json:"title" bson:"title"`
 	Content string `json:"content" bson:"content"`
 }
+
+
+type JobBodyContent struct {
+	JobId    string         `json:"jobId"`
+	Progress int            `json:"progress"`
+	Details  map[string]any `json:"details"`
+	CommitOn string         `json:"commit_on"`
+}
+
+type ActionRequestContent struct {
+	Registry map[string]any `json:"_registry"`
+	Body     map[string]any `json:"body"`
+}
