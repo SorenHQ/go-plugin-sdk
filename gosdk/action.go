@@ -2,7 +2,9 @@ package sdkv2
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/nats-io/nats.go"
@@ -60,20 +62,25 @@ func (p *Plugin) Start() error {
 	return nil
 }
 
-func (p *Plugin) Progress(jobId string, command models.Command, data models.JobProgress) {
+func (p *Plugin) Progress(jobId string, command models.Command, data models.JobProgress) any{
 	sub := p.sdk.makeJobSubject(jobId, string(command))
 	dataByte, err := sonic.Marshal(data)
 	if err != nil {
 		log.Println("progress command ", command, " error:", err)
-		return
+		return err
 	}
-	err=p.sdk.conn.Publish(sub, dataByte)
+	msg,err:=p.sdk.conn.Request(sub, dataByte,3 *time.Second)
 	if err!=nil{
 		log.Println("progress command publish error:",err)
+		return err
 	}
 	if err:=p.sdk.conn.Flush();err!=nil{
 		log.Println("progress command flush error:",err)
+		return err
 	}
+
+	fmt.Println(string(msg.Data))
+	return msg
 }
 
 
