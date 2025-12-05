@@ -13,21 +13,21 @@ type PluginIntro struct {
 
 // Requirements represents the plugin requirements
 type Requirements struct {
-	ReplyTo    string                `json:"replyTo"`
-	Jsonui     map[string]any        `json:"jsonui"`
-	Jsonschema map[string]any        `json:"jsonschema"`
+	ReplyTo    string                  `json:"replyTo"`
+	Jsonui     map[string]any          `json:"jsonui"`
+	Jsonschema map[string]any          `json:"jsonschema"`
 	Handler    func(msg *nats.Msg) any `json:"-"`
 }
 
 // PluginAction represents a single plugin action
 // Subject: soren.v2.<PLUGIN_ID>.@actions
 type Action struct {
-	Method         string                `json:"method"`
-	Description    string                `json:"description"`
-	Title          string                `json:"title"`
-	Icon           Icon                  `json:"icon"`
-	RequestHandler func(msg *nats.Msg)any  `json:"-"`
-	Form           ActionFormBuilder     `json:"-"`
+	Method         string                  `json:"method"`
+	Description    string                  `json:"description"`
+	Title          string                  `json:"title"`
+	Icon           Icon                    `json:"icon"`
+	RequestHandler func(msg *nats.Msg) any `json:"-"`
+	Form           ActionFormBuilder       `json:"-"`
 }
 
 // Icon represents an icon for an action
@@ -39,10 +39,11 @@ type Icon struct {
 // Settings represents the settings form configuration
 // Subject: soren.v2.<PLUGIN_ID>.@settings
 type Settings struct {
-	ReplyTo    string                `json:"replyTo"`
-	Jsonui     map[string]any        `json:"jsonui"`
-	Jsonschema map[string]any        `json:"jsonschema"`
-	Handler    func(msg *nats.Msg) any `json:"-"`
+	ReplyTo    string         `json:"replyTo"`
+	Jsonui     map[string]any `json:"jsonui"`
+	Jsonschema map[string]any `json:"jsonschema"`
+	Data       map[string]any `json:"data"` // Current settings data
+	Handler func(msg *nats.Msg) any `json:"-"`
 }
 
 // ActionFormBuilder represents the action form configuration
@@ -52,12 +53,10 @@ type ActionFormBuilder struct {
 	Jsonschema map[string]any `json:"jsonschema"`
 }
 
-
-
 // PluginEvent represents a plugin event for logging
 type PluginEvent struct {
-	Event     EventType         `json:"event" bson:"event"`
-	Level     LogLevel         `json:"level" bson:"level"`
+	Event     EventType      `json:"event" bson:"event"`
+	Level     LogLevel       `json:"level" bson:"level"`
 	Source    string         `json:"source" bson:"source"`
 	Message   string         `json:"message" bson:"message"`
 	Timestamp uint64         `json:"timestamp" bson:"timestamp"`
@@ -67,14 +66,13 @@ type PluginEvent struct {
 type JobProgress struct {
 	Progress int            `json:"progress" bson:"progress"`
 	Frame    Frame          `json:"frame" bson:"frame"`
-	Details     map[string]any `json:"details"`
+	Details  map[string]any `json:"details"`
 }
 
 type Frame struct {
 	Title   string `json:"title" bson:"title"`
 	Content string `json:"content" bson:"content"`
 }
-
 
 type JobBodyContent struct {
 	JobId    string         `json:"jobId"`
