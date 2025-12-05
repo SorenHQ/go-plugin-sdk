@@ -67,7 +67,13 @@ func (p *Plugin) Progress(jobId string, command models.Command, data models.JobP
 		log.Println("progress command ", command, " error:", err)
 		return
 	}
-	p.sdk.conn.Publish(sub, dataByte)
+	err=p.sdk.conn.Publish(sub, dataByte)
+	if err!=nil{
+		log.Println("progress command publish error:",err)
+	}
+	if err:=p.sdk.conn.Flush();err!=nil{
+		log.Println("progress command flush error:",err)
+	}
 }
 
 
