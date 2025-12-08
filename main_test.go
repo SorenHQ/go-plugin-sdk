@@ -33,7 +33,6 @@ func TestMain(t *testing.T) {
 	}, nil)
 
 	plugin.SetSettings(&models.Settings{
-		ReplyTo: "settings.config.submit",
 		Jsonui: map[string]any{
 			"type": "VerticalLayout",
 

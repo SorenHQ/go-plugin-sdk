@@ -60,8 +60,9 @@ func (p *Plugin)SettingsHandler()  error{
 	// settings submit handler 
 	if p.Settings!=nil{
 		if strings.TrimSpace(p.Settings.ReplyTo)==""{
-			log.Println("no setting service defined")
-			return nil
+			p.Settings.ReplyTo = "_settings.config.submit"
+			// log.Println("no setting service defined")
+			// return nil
 		}
 		p.sdk.conn.Subscribe(p.sdk.makeSubject(p.Settings.ReplyTo),func(msg *nats.Msg) {
 			if p.Settings.Handler==nil{
