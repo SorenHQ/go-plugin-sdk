@@ -77,7 +77,9 @@ func (p *Plugin) Progress(jobId string, command models.Command, data models.JobP
 		msg, err := p.sdk.conn.Request(sub, dataByte, 3*time.Second)
 		if err != nil {
 			if err == nats.ErrNoResponders {
-				log.Default().Printf("No responders for progress command:%s - retry :%d", command, retry)
+				if retry>0{
+					log.Default().Printf("No responders for progress command:%s - retry :%d", command, retry)
+				}
 				time.Sleep(1 * time.Second)
 				continue
 
