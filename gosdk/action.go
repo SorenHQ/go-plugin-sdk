@@ -61,26 +61,41 @@ func (p *Plugin) Start() error {
 	log.Println("Plugin context done, exiting plugin:", p.Intro.Name)
 	return nil
 }
+func (p *Plugin) Done(jobId string, data map[string]any) any {
 
-func (p *Plugin) Progress(jobId string, command models.Command, data models.JobProgress) any{
+	return p.Progress(jobId, models.ProgressCommand, models.JobProgress{Progress: 100,Details: data})
+
+}
+func (p *Plugin) Progress(jobId string, command models.Command, data models.JobProgress) any {
 	sub := p.sdk.makeJobSubject(jobId, string(command))
 	dataByte, err := sonic.Marshal(data)
 	if err != nil {
 		log.Println("progress command ", command, " error:", err)
 		return err
 	}
-	msg,err:=p.sdk.conn.Request(sub, dataByte,3 *time.Second)
-	if err!=nil{
-		log.Println("progress command publish error:",err)
-		return err
-	}
-	if err:=p.sdk.conn.Flush();err!=nil{
-		log.Println("progress command flush error:",err)
-		return err
-	}
+	for retry := 0; retry < 3; retry++ {
+		msg, err := p.sdk.conn.Request(sub, dataByte, 3*time.Second)
+		if err != nil {
+			if err == nats.ErrNoResponders {
+				log.Default().Printf("No responders for progress command:%s - retry :%d", command, retry)
+				time.Sleep(1 * time.Second)
+				continue
 
-	fmt.Println(string(msg.Data))
-	return msg
+			}
+			log.Println("progress command publish error:", err)
+			log.Println("jobid : ", jobId)
+			log.Println("subs : ", sub)
+			log.Println("body : ", string(dataByte))
+
+			return err
+		}
+		if err := p.sdk.conn.Flush(); err != nil {
+			log.Println("progress command flush error:", err)
+			return err
+		}
+
+		fmt.Println(string(msg.Data))
+		return msg
+	}
+	return nil
 }
-
-
