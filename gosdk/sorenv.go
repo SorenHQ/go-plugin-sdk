@@ -2,11 +2,14 @@ package sdkv2
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
+	"strings"
 
 	nats "github.com/nats-io/nats.go"
 )
+
 // SorenSDK represents the main SDK instance for Soren v2 protocol
 type SorenSDK struct {
 	conn         *nats.Conn
@@ -22,6 +25,7 @@ type SorenSDK struct {
 // Config holds the configuration for the Soren SDK
 type Config struct {
 	AgentURI     string
+	AgentCred    string
 	PluginID     string
 	AuthKey      string
 	EventChannel string
@@ -50,7 +54,9 @@ func New(config *Config) (*SorenSDK, error) {
 	if config.StoreChannel == "" {
 		config.StoreChannel = os.Getenv("SOREN_STORE")
 	}
-
+	if config.AgentCred == "" {
+		config.AgentCred = os.Getenv("AGENT_CRED")
+	}
 	// Validate required configuration
 	if config.AgentURI == "" {
 		return nil, fmt.Errorf("agent URI is required")
@@ -58,13 +64,25 @@ func New(config *Config) (*SorenSDK, error) {
 	if config.PluginID == "" {
 		return nil, fmt.Errorf("plugin ID is required")
 	}
-
+	var nc *nats.Conn
+	var err error
 	// Connect to NATS
-	nc, err := nats.Connect(config.AgentURI)
+	if config.AgentCred != "" {
+		if strings.HasPrefix(config.AgentCred, "-----BEGIN") {
+			nc, err = nats.Connect(config.AgentURI, nats.UserCredentialBytes([]byte(config.AgentCred)))
+		}
+		credByte, err := base64.StdEncoding.DecodeString(config.AgentCred)
+		if err != nil {
+			return nil, err
+		}
+		nc, err = nats.Connect(config.AgentURI, nats.UserCredentialBytes([]byte(credByte)))
+
+	} else {
+		nc, err = nats.Connect(config.AgentURI)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to NATS: %w", err)
 	}
-
 	ctx, cancel := context.WithCancel(context.Background())
 
 	sdk := &SorenSDK{
@@ -112,6 +130,7 @@ func (s *SorenSDK) GetContext() context.Context {
 func (s *SorenSDK) makeSubject(action string) string {
 	return fmt.Sprintf("soren.v2.%s.%s", s.pluginID, action)
 }
+
 // makeSettingsSubject creates a subject with the soren.v2 prefix
 func (s *SorenSDK) makeSettingsSubject() string {
 	return fmt.Sprintf("soren.v2.%s.@settings", s.pluginID)
@@ -121,10 +140,12 @@ func (s *SorenSDK) makeSettingsSubject() string {
 func (s *SorenSDK) makeActionsListSubject() string {
 	return fmt.Sprintf("soren.v2.%s.@actions", s.pluginID)
 }
+
 // makeIntroSubject creates a subject with the soren.v2 prefix
 func (s *SorenSDK) makeIntroSubject() string {
 	return fmt.Sprintf("soren.v2.%s.@intro", s.pluginID)
 }
+
 // makeActionSubject creates a subject for action execution
 func (s *SorenSDK) makeActionCpu(action string) string {
 	return fmt.Sprintf("soren.cpu.%s.%s", s.pluginID, action)
