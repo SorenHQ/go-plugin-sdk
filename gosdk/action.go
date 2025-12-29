@@ -21,9 +21,11 @@ type Plugin struct {
 
 func NewPlugin(sdk *SorenSDK) *Plugin {
 	logtool.Init("SOREN-SDK", true)
-	return &Plugin{
+	newPlugin:= &Plugin{
 		sdk: sdk,
 	}
+	GetPluginHolder().add(sdk.pluginID,newPlugin)
+	return  newPlugin
 }
 func (p *Plugin) GetContext() context.Context {
 	return p.sdk.ctx
@@ -73,14 +75,14 @@ func (p *Plugin) Progress(jobId string, command models.Command, data models.JobP
 		log.Println("progress command ", command, " error:", err)
 		return err
 	}
-	for retry := 0; retry < 3; retry++ {
+	for retry := range 5 {
 		msg, err := p.sdk.conn.Request(sub, dataByte, 3*time.Second)
 		if err != nil {
 			if err == nats.ErrNoResponders {
-				if retry>0{
+				if retry>2{
 					log.Default().Printf("No responders for progress command:%s - retry :%d", command, retry)
 				}
-				time.Sleep(1 * time.Second)
+				time.Sleep(time.Duration(retry+1) * time.Second)
 				continue
 
 			}

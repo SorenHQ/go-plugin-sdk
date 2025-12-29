@@ -26,7 +26,7 @@ type Action struct {
 	Description    string                  `json:"description"`
 	Title          string                  `json:"title"`
 	Icon           Icon                    `json:"icon"`
-	RequestHandler func(msg *nats.Msg) any `json:"-"`
+	RequestHandler func(msg *nats.Msg)  `json:"-"`
 	Form           ActionFormBuilder       `json:"-"`
 }
 

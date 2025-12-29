@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/bytedance/sonic"
-	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/nats-io/nats.go"
 
@@ -81,30 +80,30 @@ func TestMain(t *testing.T) {
 			Jsonui:     map[string]any{"type": "Control", "scope": "#/properties/project"},
 			Jsonschema: map[string]any{"properties": map[string]any{"project": map[string]any{"enum": makeEnumsProject()}}},
 		},
-		RequestHandler: func(msg *nats.Msg) any {
+		RequestHandler: func(msg *nats.Msg)  {
 			// data:=msg.Data
 			// for example in this step we register a job in local database or external system - mae a scan in Joern
-			uuid,err:=uuid.NewV6()
-			if err!=nil{
-				return map[string]any{"jobId": uuid.String()}
-			}
-			return map[string]any{"details": map[string]any{"error": "service unavailable"}}
+			sdkv2.RejectWithBody(msg,map[string]any{"reason":"rate limit exceeded"})
 		},
 	
 	}, models.Action{
-		Method: "scan.gen.graph",
+		Method: "scan",
 		Title:  "Scan Code And Create Graph",
 		Form: models.ActionFormBuilder{
 			Jsonui:     map[string]any{"type": "Control", "scope": "#/properties/reponame"},
 			Jsonschema: map[string]any{"properties": map[string]any{"reponame": map[string]any{"type": "string"}}},
 		},
-		RequestHandler: func(msg *nats.Msg) any {
+		RequestHandler: func(msg *nats.Msg)  {
 			// for example in this step we register a job in local database or external system - mae a scan in Joern
-			uuid,err:=uuid.NewV6()
-			if err!=nil{
-				return map[string]any{"jobId": uuid.String()}
-			}
-			return map[string]any{"details": map[string]any{"error": "service unavailable"}}
+		jobId:=sdkv2.Accept(msg)
+		//
+		sdkv2.GetPluginById(sdkInstance.GetPluginID()).Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 10})
+		sdkv2.GetPluginById(sdkInstance.GetPluginID()).Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 20})
+		sdkv2.GetPluginById(sdkInstance.GetPluginID()).Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 30})
+		sdkv2.GetPluginById(sdkInstance.GetPluginID()).Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 40})
+
+		//
+		sdkv2.GetPluginById(sdkInstance.GetPluginID()).Done(jobId,map[string]any{"details":"final result ....."})
 		},
 	},
 	})

@@ -1,0 +1,41 @@
+package sdkv2
+
+import (
+	"fmt"
+
+	"github.com/bytedance/sonic"
+	"github.com/nats-io/nats.go"
+	uuid "github.com/nu7hatch/gouuid"
+	"github.com/sorenhq/go-plugin-sdk/gosdk/models"
+)
+
+// Accept Request , make a request session and return sessionId - jobId
+func Accept(msg *nats.Msg) (jobId string) {
+	jobBody:=models.JobBodyContent{}
+	uuid, err := uuid.NewV4()
+	if err != nil {
+		return ""
+	}
+	jobBody.JobId = uuid.String()
+	responseByte, err := sonic.Marshal(jobBody)
+	if err != nil {
+		return ""
+	}
+	err = msg.Respond(responseByte)
+	return uuid.String()
+}
+func RejectWithBody(msg *nats.Msg,body map[string]any)  {
+	responseBody:=models.JobBodyContent{Details: map[string]any{"error":body}}
+	responseByte, err := sonic.Marshal(responseBody)
+	if err != nil {
+		fmt.Println(err)
+		return 
+	}
+	msg.Respond(responseByte)
+}
+func GetPluginById(pluginId string)*Plugin{
+	if p, ok:=GetPluginHolder().get(pluginId);ok{
+		return p
+	}
+	return  nil
+}
