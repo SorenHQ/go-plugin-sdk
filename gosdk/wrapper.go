@@ -11,7 +11,7 @@ import (
 
 // Accept Request , make a request session and return sessionId - jobId
 func Accept(msg *nats.Msg) (jobId string) {
-	jobBody:=models.JobBodyContent{}
+	jobBody := models.JobBodyContent{}
 	uuid, err := uuid.NewV4()
 	if err != nil {
 		return ""
@@ -24,18 +24,28 @@ func Accept(msg *nats.Msg) (jobId string) {
 	err = msg.Respond(responseByte)
 	return uuid.String()
 }
-func RejectWithBody(msg *nats.Msg,body map[string]any)  {
-	responseBody:=models.JobBodyContent{Details: map[string]any{"error":body}}
+func RejectWithBody(msg *nats.Msg, body map[string]any) {
+	responseBody := models.JobBodyContent{Details: map[string]any{"error": body}}
 	responseByte, err := sonic.Marshal(responseBody)
 	if err != nil {
 		fmt.Println(err)
-		return 
+		return
 	}
 	msg.Respond(responseByte)
 }
-func GetPluginById(pluginId string)*Plugin{
-	if p, ok:=GetPluginHolder().get(pluginId);ok{
+// for multi plugin handler
+func GetPluginById(pluginId string) *Plugin {
+	if p, ok := GetPluginHolder().get(pluginId); ok {
 		return p
 	}
-	return  nil
+	return nil
+}
+// Get First Registered Plugin
+func GetPlugin() *Plugin {
+	h := GetPluginHolder()
+	for _, v := range h.holder {
+		return v
+	}
+	return nil
+
 }

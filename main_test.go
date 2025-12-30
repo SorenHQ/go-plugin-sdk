@@ -97,13 +97,13 @@ func TestMain(t *testing.T) {
 			// for example in this step we register a job in local database or external system - mae a scan in Joern
 		jobId:=sdkv2.Accept(msg)
 		//
-		sdkv2.GetPluginById(sdkInstance.GetPluginID()).Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 10})
-		sdkv2.GetPluginById(sdkInstance.GetPluginID()).Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 20})
-		sdkv2.GetPluginById(sdkInstance.GetPluginID()).Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 30})
-		sdkv2.GetPluginById(sdkInstance.GetPluginID()).Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 40})
+		sdkv2.GetPlugin().Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 10})
+		sdkv2.GetPlugin().Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 20})
+		sdkv2.GetPlugin().Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 30})
+		sdkv2.GetPlugin().Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 40})
 
 		//
-		sdkv2.GetPluginById(sdkInstance.GetPluginID()).Done(jobId,map[string]any{"details":"final result ....."})
+		sdkv2.GetPlugin().Done(jobId,map[string]any{"details":"final result ....."})
 		},
 	},
 	})
