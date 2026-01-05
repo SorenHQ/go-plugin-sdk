@@ -3,6 +3,7 @@ package sdkv2
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	nats "github.com/nats-io/nats.go"
@@ -24,7 +25,7 @@ func (e *EventLogger) Log(source string, level models.LogLevel, message string, 
 	event := models.PluginEvent{
 		Event:     models.EventTypeLog,
 		Level:     level,
-		Source:    fmt.Sprintf("%s - %s", e.sdk.pluginID,source),
+		Source:    fmt.Sprintf("%s - %s", e.sdk.pluginID, source),
 		Message:   message,
 		Timestamp: uint64(time.Now().Unix()),
 		Details:   details,
@@ -57,8 +58,11 @@ func (e *EventLogger) sendEvent(event models.PluginEvent) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
-
 	subject := fmt.Sprintf("%s.%s.log", e.sdk.eventChannel, e.sdk.pluginID)
+	if len(strings.Split(e.sdk.pluginID, ".")) > 0 {
+		subject = fmt.Sprintf("%s.log", e.sdk.eventChannel)
+
+	}
 
 	msg := &nats.Msg{
 		Subject: subject,

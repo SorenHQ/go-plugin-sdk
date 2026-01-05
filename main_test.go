@@ -94,7 +94,6 @@ func TestMain(t *testing.T) {
 			Jsonschema: map[string]any{"properties": map[string]any{"reponame": map[string]any{"type": "string"}}},
 		},
 		RequestHandler: func(msg *nats.Msg)  {
-			// for example in this step we register a job in local database or external system - mae a scan in Joern
 		jobId:=sdkv2.Accept(msg)
 		//
 		sdkv2.GetPlugin().Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 10})

@@ -58,6 +58,14 @@ func (p *Plugin) Start() error {
 		return err
 	}
 	p.ActionsHandler()
+	event := NewEventLogger(p.sdk)
+	actionsByte,_:=sonic.Marshal(p.Actions)
+	if  len(actionsByte)>0{
+		actionsList:=[]map[string]any{}
+		if err:=sonic.Unmarshal(actionsByte,&actionsList);err==nil{
+			event.Log("soren-sdk-init", models.LogLevelInfo, "start plugin", map[string]any{"actions":actionsList})
+		}
+	}
 
 	<-p.sdk.ctx.Done()
 	log.Println("Plugin context done, exiting plugin:", p.Intro.Name)
