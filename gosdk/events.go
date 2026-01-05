@@ -74,7 +74,7 @@ func (e *EventLogger) sendEvent(event models.PluginEvent) error {
 	if err != nil {
 		return fmt.Errorf("failed to send event: %w", err)
 	}
-
+	fmt.Println(string(resp.Data))
 	var response map[string]interface{}
 	if err := json.Unmarshal(resp.Data, &response); err != nil {
 		return fmt.Errorf("failed to unmarshal response: %w", err)

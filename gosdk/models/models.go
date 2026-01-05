@@ -27,7 +27,7 @@ type Action struct {
 	Title          string                  `json:"title"`
 	Icon           Icon                    `json:"icon"`
 	RequestHandler func(msg *nats.Msg)  `json:"-"`
-	Form           ActionFormBuilder       `json:"-"`
+	Form           ActionFormBuilder       `json:"form"`
 }
 
 // Icon represents an icon for an action

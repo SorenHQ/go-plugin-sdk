@@ -15,7 +15,7 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	err := godotenv.Load(".env")
+	err := godotenv.Load(".env.dev")
 	if err != nil {
 		fmt.Println(err)
 	}
