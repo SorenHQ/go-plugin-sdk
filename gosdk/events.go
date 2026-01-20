@@ -67,14 +67,27 @@ func (e *EventLogger) sendEvent(event models.PluginEvent) error {
 	msg := &nats.Msg{
 		Subject: subject,
 		Data:    body,
-		Header:  nats.Header{"Authorization": []string{e.sdk.authKey}},
+	}
+
+	// Only add Authorization header if authKey is set
+	if e.sdk.authKey != "" {
+		msg.Header = nats.Header{"Authorization": []string{e.sdk.authKey}}
 	}
 
 	resp, err := e.sdk.conn.RequestMsg(msg, 3*time.Second)
 	if err != nil {
 		return fmt.Errorf("failed to send event: %w", err)
 	}
-	fmt.Println(string(resp.Data))
+	
+	// Only print response if it contains an error
+	if len(resp.Data) > 0 {
+		var response map[string]interface{}
+		if err := json.Unmarshal(resp.Data, &response); err == nil {
+			if errMsg, ok := response["error"].(string); ok && errMsg != "" {
+				fmt.Printf("Event logging error: %s\n", errMsg)
+			}
+		}
+	}
 	var response map[string]interface{}
 	if err := json.Unmarshal(resp.Data, &response); err != nil {
 		return fmt.Errorf("failed to unmarshal response: %w", err)
@@ -104,7 +117,11 @@ func (e *EventLogger) SendMultipleEvents(events ...models.PluginEvent) error {
 	msg := &nats.Msg{
 		Subject: subject,
 		Data:    body,
-		Header:  nats.Header{"Authorization": []string{e.sdk.authKey}},
+	}
+
+	// Only add Authorization header if authKey is set
+	if e.sdk.authKey != "" {
+		msg.Header = nats.Header{"Authorization": []string{e.sdk.authKey}}
 	}
 
 	resp, err := e.sdk.conn.RequestMsg(msg, 3*time.Second)

@@ -127,7 +127,22 @@ func (s *SorenSDK) GetContext() context.Context {
 }
 
 // makeSubject creates a subject with the soren.v2 prefix
+// For internal plugins (pluginID contains "bin.*"), uses gateway pattern: soren.v2.bin.*.{uuid}.{action}
+// For other plugins, uses standard pattern: soren.v2.{pluginID}.{action}
 func (s *SorenSDK) makeSubject(action string) string {
+	// Check if this is an internal plugin (pluginID contains "bin.*")
+	if strings.HasPrefix(s.pluginID, "bin.*.") {
+		// Extract UUID part after "bin.*."
+		parts := strings.Split(s.pluginID, ".")
+		if len(parts) >= 3 {
+			// Get the UUID part (last part after bin.*)
+			uuid := parts[len(parts)-1]
+			// Use gateway pattern: soren.v2.bin.*.{uuid}.{action}
+			// The * wildcard will match any entityId sent by the gateway
+			return fmt.Sprintf("soren.v2.bin.*.%s.%s", uuid, action)
+		}
+	}
+	// Standard pattern for non-internal plugins
 	return fmt.Sprintf("soren.v2.%s.%s", s.pluginID, action)
 }
 
@@ -146,14 +161,28 @@ func (s *SorenSDK) makeIntroSubject() string {
 	return fmt.Sprintf("soren.v2.%s.@intro", s.pluginID)
 }
 
-// makeActionSubject creates a subject for action execution
+// makeActionCpu creates a subject for CPU/job processing (original purpose)
 func (s *SorenSDK) makeActionCpu(action string) string {
 	return fmt.Sprintf("soren.cpu.%s.%s", s.pluginID, action)
 }
 
-// makeJobSubject creates a subject for job updates
+// makeJobSubject creates a subject for job updates (CPU pattern)
 func (s *SorenSDK) makeJobSubject(jobID, jobUpdate string) string {
 	return fmt.Sprintf("soren.cpu.%s.%s.%s", s.pluginID, jobID, jobUpdate)
+}
+
+// makeGatewayJobSubject creates a subject for job updates using gateway pattern
+// Pattern: soren.v2.bin.{entityId}.{pluginId}.{jobId}.{command}
+func (s *SorenSDK) makeGatewayJobSubject(entityId, jobID, command string) string {
+	// Extract UUID from pluginID if it contains "bin.*"
+	pluginUUID := s.pluginID
+	if strings.HasPrefix(pluginUUID, "bin.*.") {
+		parts := strings.Split(pluginUUID, ".")
+		if len(parts) >= 3 {
+			pluginUUID = parts[len(parts)-1]
+		}
+	}
+	return fmt.Sprintf("soren.v2.bin.%s.%s.%s.%s", entityId, pluginUUID, jobID, command)
 }
 
 // makeFormSubject creates a subject for form requests
