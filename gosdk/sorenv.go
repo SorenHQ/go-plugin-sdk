@@ -171,78 +171,8 @@ func (s *SorenSDK) makeJobSubject(jobID, jobUpdate string) string {
 	return fmt.Sprintf("soren.cpu.%s.%s.%s", s.pluginID, jobID, jobUpdate)
 }
 
-// makeGatewayJobSubject creates a subject for job updates using gateway pattern
-// Pattern: soren.v2.bin.{entityId}.{pluginId}.{jobId}.{command}
-func (s *SorenSDK) makeGatewayJobSubject(entityId, jobID, command string) string {
-	// Extract UUID from pluginID if it contains "bin.*"
-	pluginUUID := s.pluginID
-	if strings.HasPrefix(pluginUUID, "bin.*.") {
-		parts := strings.Split(pluginUUID, ".")
-		if len(parts) >= 3 {
-			pluginUUID = parts[len(parts)-1]
-		}
-	}
-	return fmt.Sprintf("soren.v2.bin.%s.%s.%s.%s", entityId, pluginUUID, jobID, command)
-}
 
 // makeFormSubject creates a subject for form requests
 func (s *SorenSDK) makeFormSubject(action string) string {
 	return fmt.Sprintf("soren.v2.%s.%s.@form", s.pluginID, action)
 }
-
-// makeProgressSubject creates a subject for progress updates
-func (s *SorenSDK) makeProgressSubject(jobID string) string {
-	return fmt.Sprintf("soren.cpu.%s.%s.*", s.pluginID, jobID)
-}
-
-// // SendProgress sends a progress update for a specific job
-// func (s *SorenSDK) SendProgress(jobID string, progress int, message string, data map[string]any) error {
-// 	progressMsg := ProgressMessage{
-// 		JobID:     jobID,
-// 		Progress:  progress,
-// 		Message:   message,
-// 		Data:      data,
-// 		Timestamp: time.Now().Unix(),
-// 	}
-
-// 	msgData, err := sonic.Marshal(progressMsg)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to marshal progress message: %w", err)
-// 	}
-
-// 	// Send to the progress subject
-// 	subject := s.makeProgressSubject(jobID)
-// 	return s.conn.Publish(subject, msgData)
-// }
-
-// // SendJobStatus sends a job status update
-// func (s *SorenSDK) SendJobStatus(jobID, status string, progress int, message string, result map[string]any, errMsg string) error {
-// 	jobStatus := JobStatus{
-// 		JobID:     jobID,
-// 		Status:    status,
-// 		Progress:  progress,
-// 		Message:   message,
-// 		Result:    result,
-// 		Error:     errMsg,
-// 		Timestamp: time.Now().Unix(),
-// 	}
-
-// 	msgData, err := sonic.Marshal(jobStatus)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to marshal job status: %w", err)
-// 	}
-
-// 	// Send to the progress subject
-// 	subject := s.makeProgressSubject(jobID)
-// 	return s.conn.Publish(subject, msgData)
-// }
-
-// // CompleteJob marks a job as completed with 100% progress
-// func (s *SorenSDK) CompleteJob(jobID string, result map[string]any, message string) error {
-// 	return s.SendJobStatus(jobID, "completed", 100, message, result, "")
-// }
-
-// // FailJob marks a job as failed
-// func (s *SorenSDK) FailJob(jobID string, errMsg string) error {
-// 	return s.SendJobStatus(jobID, "failed", 0, "", nil, errMsg)
-// }

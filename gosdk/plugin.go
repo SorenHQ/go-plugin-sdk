@@ -91,38 +91,37 @@ func (p *Plugin) ActionsHandler() {
 		}
 		msg.Respond(listBytes)
 	})
-	for _, action := range p.Actions {
-		_, err := p.sdk.conn.Subscribe(p.sdk.makeFormSubject(action.Method), func(msg *nats.Msg) {
+	for _,action:=range p.Actions{
+		_,err:=p.sdk.conn.Subscribe(p.sdk.makeFormSubject(action.Method),func(msg *nats.Msg) {
 			// Handle the action message
-			formBody, err := sonic.Marshal(action.Form)
-			if err != nil {
-				log.Println("action form ", action.Title, " error:", err)
-				return
+			formBody,err:=sonic.Marshal(action.Form)
+			if err!=nil{
+				log.Println("action form ",action.Title," error:",err)
+				return 
 			}
 			msg.Respond(formBody)
 		})
-		if err != nil {
-			log.Printf("subscribe error: %s on %s\n", err.Error(), p.sdk.makeFormSubject(action.Method))
-			return
+		if err!=nil{
+			log.Printf("subscribe error: %s on %s\n",err.Error(),p.sdk.makeFormSubject(action.Method))
+			return 
 		}
-		log.Printf("Form Builder Service : %s", p.sdk.makeFormSubject(action.Method))
+		log.Printf("Form Builder Service : %s",p.sdk.makeFormSubject(action.Method))
 		// request handler make a jobId and respond it with the result
-		// makeSubject automatically handles internal plugins (bin.*) and routes to gateway pattern
-		actionSubject := p.sdk.makeSubject(action.Method)
-		_, err = p.sdk.conn.Subscribe(actionSubject, func(msg *nats.Msg) {
+		_,err=p.sdk.conn.Subscribe(p.sdk.makeActionCpu(action.Method),func(msg *nats.Msg) {
 			action.RequestHandler(msg)
 			// result:=
 			// resByte,err:=sonic.Marshal(result)
 			// if err!=nil{
 			// 	log.Println("action response ",action.Title," error:",err)
-			// 	return
+			// 	return 
 			// }
 			// msg.Respond(resByte)
 		})
-		if err != nil {
-			log.Printf("subscribe error: %s on %s\n", err.Error(), p.sdk.makeSubject(action.Method))
-			return
+		if err!=nil{
+			log.Printf("subscribe error: %s on %s\n",err.Error(),p.sdk.makeActionCpu(action.Method))
+			return 
 		}
-		log.Printf("Subscribed Action Execution : %s", p.sdk.makeSubject(action.Method))
+		log.Printf("Subscribed Action : %s",p.sdk.makeActionCpu(action.Method))
 	}
+
 }

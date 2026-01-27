@@ -10,19 +10,6 @@ import (
 	"github.com/sorenhq/go-plugin-sdk/gosdk/models"
 )
 
-// extractEntityIdFromSubject extracts entityId (spaceId) from NATS message subject
-// Subject pattern: soren.v2.bin.{entityId}.{pluginId}.{action}
-func extractEntityIdFromSubject(subject string) string {
-	parts := strings.Split(subject, ".")
-	// Look for "bin" in the subject, entityId should be right after it
-	for i, part := range parts {
-		if part == "bin" && i+1 < len(parts) {
-			return parts[i+1]
-		}
-	}
-	return ""
-}
-
 // Accept Request , make a request session and return sessionId - jobId
 func Accept(msg *nats.Msg) (jobId string) {
 	jobBody := models.JobBodyContent{}
@@ -45,16 +32,7 @@ func Accept(msg *nats.Msg) (jobId string) {
 	}
 	err = msg.Respond(responseByte)
 	
-	// Extract entityId from subject and store it for this job
-	entityId := extractEntityIdFromSubject(msg.Subject)
-	if entityId != "" {
-		plugin := GetPlugin()
-		if plugin != nil {
-			plugin.StoreEntityIdForJob(jobId, entityId)
-		}
-	}
-	
-	return jobId
+	return uuid.String()
 }
 func RejectWithBody(msg *nats.Msg, body map[string]any) {
 	responseBody := models.JobBodyContent{Details: map[string]any{"error": body}}

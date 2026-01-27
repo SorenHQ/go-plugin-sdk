@@ -2,6 +2,7 @@ package sdkv2
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -13,23 +14,16 @@ import (
 )
 
 type Plugin struct {
-	sdk         *SorenSDK
-	Intro       models.PluginIntro
-	Settings    *models.Settings
-	Actions     []models.Action
-	jobEntityId map[string]string // Maps jobId to entityId (spaceId)
-	jobMutex    sync.RWMutex
+	sdk      *SorenSDK
+	Intro    models.PluginIntro
+	Settings *models.Settings
+	Actions  []models.Action
 }
 
 func NewPlugin(sdk *SorenSDK) *Plugin {
 	logtool.Init("SOREN-SDK", true)
 	newPlugin := &Plugin{
-<<<<<<< HEAD
-		sdk:         sdk,
-		jobEntityId: make(map[string]string),
-=======
 		sdk: sdk,
->>>>>>> v0.2.3
 	}
 	GetPluginHolder().add(sdk.pluginID, newPlugin)
 	return newPlugin
@@ -78,49 +72,10 @@ func (p *Plugin) Start() error {
 	log.Println("Plugin context done, exiting plugin:", p.Intro.Name)
 	return nil
 }
-
-// StoreEntityIdForJob stores the entityId (spaceId) for a given jobId
-func (p *Plugin) StoreEntityIdForJob(jobId, entityId string) {
-	p.jobMutex.Lock()
-	defer p.jobMutex.Unlock()
-	p.jobEntityId[jobId] = entityId
-}
-
-// getEntityIdForJob retrieves the entityId for a given jobId
-func (p *Plugin) getEntityIdForJob(jobId string) string {
-	p.jobMutex.RLock()
-	defer p.jobMutex.RUnlock()
-	return p.jobEntityId[jobId]
-}
-
 func (p *Plugin) Done(jobId string, data map[string]any) any {
-	// Try to get entityId for this job - if present, use gateway subject pattern
-	entityId := p.getEntityIdForJob(jobId)
-	var sub string
-	if entityId != "" {
-		// Use gateway pattern: soren.v2.bin.{entityId}.{pluginId}.{jobId}.progress
-		sub = p.sdk.makeGatewayJobSubject(entityId, jobId, string(models.ProgressCommand))
-	} else {
-		// Fallback to CPU pattern
-		sub = p.sdk.makeJobSubject(jobId, string(models.ProgressCommand))
-	}
 
 	return p.Progress(jobId, models.ProgressCommand, models.JobProgress{Progress: 100, Details: data})
 
-	log.Printf("Publishing Done result - subject: %s, jobId: %s, entityId: %s, data size: %d bytes", sub, jobId, entityId, len(dataByte))
-	if len(dataByte) < 2000 {
-		log.Printf("Done result data (first 2000 chars): %s", string(dataByte))
-	} else {
-		log.Printf("Done result data preview (first 500 chars): %s...", string(dataByte[:500]))
-	}
-
-	err = p.sdk.conn.Publish(sub, dataByte)
-	if err != nil {
-		log.Printf("Failed to publish done result: %v (subject: %s, jobId: %s)", err, sub, jobId)
-		return err
-	}
-
-	return nil
 }
 func (p *Plugin) Progress(jobId string, command models.Command, data models.JobProgress) any {
 
