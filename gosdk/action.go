@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -78,6 +79,9 @@ func (p *Plugin) Done(jobId string, data map[string]any) any {
 }
 func (p *Plugin) Progress(jobId string, command models.Command, data models.JobProgress) any {
 	sub := p.sdk.makeJobSubject(jobId, string(command))
+	if entId,ok:=GetjobsHolder().Get(jobId);ok{
+		sub = strings.Replace(sub,"*",entId,1)
+	}
 	dataByte, err := sonic.Marshal(data)
 	if err != nil {
 		log.Println("progress command ", command, " error:", err)
@@ -106,7 +110,7 @@ func (p *Plugin) Progress(jobId string, command models.Command, data models.JobP
 			return err
 		}
 
-		fmt.Println(string(msg.Data))
+		// fmt.Sprintf("result of %s  :  %s ",sub,string(msg.Data))
 		return msg
 	}
 	return nil
