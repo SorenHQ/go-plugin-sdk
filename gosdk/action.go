@@ -110,7 +110,7 @@ func (p *Plugin) Progress(jobId string, command models.Command, data models.JobP
 			return err
 		}
 
-		// fmt.Sprintf("result of %s  :  %s ",sub,string(msg.Data))
+		fmt.Printf("result of %s  :  %s \n",sub,string(msg.Data))
 		return msg
 	}
 	return nil
