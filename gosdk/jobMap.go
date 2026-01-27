@@ -22,6 +22,12 @@ func (d *jobToReqMap) Add(jobId string, entityId string) {
 	d.holder[jobId] = entityId
 }
 
+func (d *jobToReqMap) Delete(jobId string) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	delete(d.holder,jobId)
+}
+
 func GetjobsHolder()*jobToReqMap{
 	if sj==nil{
 		sj = &jobToReqMap{}

@@ -22,11 +22,11 @@ type Plugin struct {
 
 func NewPlugin(sdk *SorenSDK) *Plugin {
 	logtool.Init("SOREN-SDK", true)
-	newPlugin:= &Plugin{
+	newPlugin := &Plugin{
 		sdk: sdk,
 	}
-	GetPluginHolder().add(sdk.pluginID,newPlugin)
-	return  newPlugin
+	GetPluginHolder().add(sdk.pluginID, newPlugin)
+	return newPlugin
 }
 func (p *Plugin) GetContext() context.Context {
 	return p.sdk.ctx
@@ -60,11 +60,11 @@ func (p *Plugin) Start() error {
 	}
 	p.ActionsHandler()
 	event := NewEventLogger(p.sdk)
-	actionsByte,_:=sonic.Marshal(p.Actions)
-	if  len(actionsByte)>0{
-		actionsList:=[]map[string]any{}
-		if err:=sonic.Unmarshal(actionsByte,&actionsList);err==nil{
-			event.Log("soren-sdk-init", models.LogLevelInfo, "start plugin", map[string]any{"actions":actionsList})
+	actionsByte, _ := sonic.Marshal(p.Actions)
+	if len(actionsByte) > 0 {
+		actionsList := []map[string]any{}
+		if err := sonic.Unmarshal(actionsByte, &actionsList); err == nil {
+			event.Log("soren-sdk-init", models.LogLevelInfo, "start plugin", map[string]any{"actions": actionsList})
 		}
 	}
 
@@ -74,13 +74,14 @@ func (p *Plugin) Start() error {
 }
 func (p *Plugin) Done(jobId string, data map[string]any) any {
 
-	return p.Progress(jobId, models.ProgressCommand, models.JobProgress{Progress: 100,Details: data})
+	return p.Progress(jobId, models.ProgressCommand, models.JobProgress{Progress: 100, Details: data})
 
 }
 func (p *Plugin) Progress(jobId string, command models.Command, data models.JobProgress) any {
+
 	sub := p.sdk.makeJobSubject(jobId, string(command))
-	if entId,ok:=GetjobsHolder().Get(jobId);ok{
-		sub = strings.Replace(sub,"*",entId,1)
+	if entId, ok := GetjobsHolder().Get(jobId); ok {
+		sub = strings.Replace(sub, "*", entId, 1)
 	}
 	dataByte, err := sonic.Marshal(data)
 	if err != nil {
@@ -91,7 +92,7 @@ func (p *Plugin) Progress(jobId string, command models.Command, data models.JobP
 		msg, err := p.sdk.conn.Request(sub, dataByte, 3*time.Second)
 		if err != nil {
 			if err == nats.ErrNoResponders {
-				if retry>2{
+				if retry > 2 {
 					log.Default().Printf("No responders for progress command:%s - retry :%d", command, retry)
 				}
 				time.Sleep(time.Duration(retry+1) * time.Second)
@@ -110,8 +111,11 @@ func (p *Plugin) Progress(jobId string, command models.Command, data models.JobP
 			return err
 		}
 
-		fmt.Printf("result of %s  :  %s \n",sub,string(msg.Data))
+		fmt.Printf("result of %s  :  %s \n", sub, string(msg.Data))
 		return msg
+	}
+	if data.Progress == 100 {
+		GetjobsHolder().Delete(jobId)
 	}
 	return nil
 }
