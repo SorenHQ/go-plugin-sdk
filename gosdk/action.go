@@ -74,10 +74,20 @@ func (p *Plugin) Start() error {
 }
 func (p *Plugin) Done(jobId string, data map[string]any) any {
 
-	return p.Progress(jobId, models.ProgressCommand, models.JobProgress{Progress: 100, Details: data})
+	return p.Command(jobId, models.ProgressCommand, models.CommandPayload{Progress: 100, Details: data})
 
 }
-func (p *Plugin) Progress(jobId string, command models.Command, data models.JobProgress) any {
+func (p *Plugin) DoneWithError(jobId string, error string) any {
+
+	return p.Command(jobId, models.ProgressCommand, models.CommandPayload{Progress: 100, Details: map[string]any{"error":error}})
+
+}
+func (p *Plugin) Progress(jobId string, data  models.CommandPayload) any {
+
+	return p.Command(jobId, models.ProgressCommand, data)
+
+}
+func (p *Plugin) Command(jobId string, command models.Command, data models.CommandPayload) any {
 
 	sub := p.sdk.makeJobSubject(jobId, string(command))
 	if entId, ok := GetjobsHolder().Get(jobId); ok {

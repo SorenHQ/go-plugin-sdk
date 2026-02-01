@@ -15,7 +15,7 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	err := godotenv.Load(".env.dev")
+	err := godotenv.Load("./soren.internal.env")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -83,7 +83,7 @@ func TestMain(t *testing.T) {
 		RequestHandler: func(msg *nats.Msg)  {
 			// data:=msg.Data
 			// for example in this step we register a job in local database or external system - mae a scan in Joern
-			sdkv2.RejectWithBody(msg,map[string]any{"reason":"rate limit exceeded"})
+			sdkv2.RejectReq(msg,map[string]any{"reason":"rate limit exceeded"})
 		},
 	
 	}, models.Action{
@@ -94,15 +94,17 @@ func TestMain(t *testing.T) {
 			Jsonschema: map[string]any{"properties": map[string]any{"reponame": map[string]any{"type": "string"}}},
 		},
 		RequestHandler: func(msg *nats.Msg)  {
-		jobId:=sdkv2.Accept(msg)
+		jobId:=sdkv2.AcceptReq(msg)
+		fmt.Println("Recieved Message On : ",msg.Subject)
 		//
-		sdkv2.GetPlugin().Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 10})
-		sdkv2.GetPlugin().Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 20})
-		sdkv2.GetPlugin().Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 30})
-		sdkv2.GetPlugin().Progress(jobId,models.ProgressCommand,models.JobProgress{Progress: 40})
+		sdkv2.GetPlugin().Progress(jobId,models.CommandPayload{Progress: 10})
+		sdkv2.GetPlugin().Progress(jobId,models.CommandPayload{Progress: 20})
+		sdkv2.GetPlugin().Progress(jobId,models.CommandPayload{Progress: 30})
+		sdkv2.GetPlugin().Progress(jobId,models.CommandPayload{Progress: 40})
 
 		//
-		sdkv2.GetPlugin().Done(jobId,map[string]any{"details":"final result ....."})
+		spaceId,_:=sdkv2.GetjobsHolder().Get(jobId)
+		sdkv2.GetPlugin().Done(jobId,map[string]any{"action":"test on go-sdk","reqFrom":spaceId,"details":"final result ....."})
 		},
 	},
 	})

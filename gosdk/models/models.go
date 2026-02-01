@@ -63,7 +63,7 @@ type PluginEvent struct {
 	Details   map[string]any `json:"details" bson:"details"`
 }
 
-type JobProgress struct {
+type CommandPayload struct {
 	Progress int            `json:"progress" bson:"progress"`
 	Frame    Frame          `json:"frame" bson:"frame"`
 	Details  map[string]any `json:"details"`
