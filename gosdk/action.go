@@ -103,7 +103,7 @@ func (p *Plugin) Command(jobId string, command models.Command, data models.Comma
 		if err != nil {
 			if err == nats.ErrNoResponders {
 				if retry > 2 {
-					log.Default().Printf("No responders for progress command:%s - retry :%d", command, retry)
+					log.Default().Printf("No responders for progress command:%s - retry :%d , %s", command, retry,string(dataByte[:100]))
 				}
 				time.Sleep(time.Duration(retry+1) * time.Second)
 				continue
@@ -128,4 +128,34 @@ func (p *Plugin) Command(jobId string, command models.Command, data models.Comma
 		GetjobsHolder().Delete(jobId)
 	}
 	return nil
+}
+
+
+func (p *Plugin) SendReq(subject string,dataByte []byte)(*nats.Msg,error){
+		for retry := range 5 {
+		msg, err := p.sdk.conn.Request(subject, dataByte, 3*time.Second)
+		if err != nil {
+			if err == nats.ErrNoResponders {
+				if retry > 2 {
+					log.Default().Printf("No responders - retry :%d", retry)
+				}
+				time.Sleep(time.Duration(retry+1) * time.Second)
+				continue
+
+			}
+			log.Println("subs : ", subject)
+			log.Println("body : ", string(dataByte))
+
+			return msg,err
+		}
+		if err := p.sdk.conn.Flush(); err != nil {
+			log.Println("progress command flush error:", err)
+			return  msg,err
+		}
+
+		fmt.Printf("result of %s  :  %s \n", subject, string(msg.Data))
+			return msg,nil
+
+	}
+	return nil,nil
 }
