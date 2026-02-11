@@ -135,7 +135,7 @@ func (p *Plugin) GetCurrentPathData(jobId string) (*nats.Msg, error) {
 }
 
 func (p *Plugin) GetPathData(jobId, jsonPath string) (*nats.Msg, error) {
-	sub := p.sdk.makeGetCurrentPathSubject(jobId)
+	sub := p.sdk.makeGetDataSubject(jobId)
 		if entId, ok := GetjobsHolder().Get(jobId); ok {
 		sub = strings.Replace(sub, "*", entId, 1)
 	}
