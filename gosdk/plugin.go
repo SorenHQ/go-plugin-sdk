@@ -6,6 +6,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/nats-io/nats.go"
+	"github.com/sorenhq/go-plugin-sdk/gosdk/models"
 	"github.com/sorenhq/go-plugin-sdk/logtool"
 )
 
@@ -143,10 +144,14 @@ func (p *Plugin) GetPathData(jobId, jsonPath string) (*nats.Msg, error) {
 }
 
 
-func (p *Plugin) CommitOnPath(jobId, jsonPath string) (*nats.Msg, error) {
+func (p *Plugin) CommitOnPath(jobId string, value models.JobBodyContent) (*nats.Msg, error) {
 	sub := p.sdk.makeCommitOnPathSubject(jobId)
 		if entId, ok := GetjobsHolder().Get(jobId); ok {
 		sub = strings.Replace(sub, "*", entId, 1)
 	}
-	return p.SendReq(sub, []byte(jsonPath))
+	byteData,err:=sonic.Marshal(value)
+	if err!=nil{
+		return  nil,err
+	}
+	return p.SendReq(sub,byteData )
 }
