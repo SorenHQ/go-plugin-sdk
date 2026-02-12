@@ -186,7 +186,11 @@ func (s *SorenSDK) makeGetDataSubject(jobID string) string {
 
 
 // "context/current"
-// makeFormSubject creates a subject for form requests
 func (s *SorenSDK) makeGetCurrentPathSubject(jobID string) string {
 	return fmt.Sprintf("soren.cpu.%s.%s.%s", s.pluginID, jobID, "context/current")
+}
+
+// "commit"
+func (s *SorenSDK) makeCommitOnPathSubject(jobID string) string {
+	return fmt.Sprintf("soren.cpu.%s.%s.%s", s.pluginID, jobID, "commit")
 }
