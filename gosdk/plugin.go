@@ -81,7 +81,19 @@ func (p *Plugin) SettingsHandler() error {
 
 	return nil
 }
+func (p *Plugin) MetaFunchandler() {
 
+	for _, metafn := range p.MetaFunc {
+		_, err := p.sdk.conn.Subscribe(p.sdk.makeSubject(metafn.Method), func(msg *nats.Msg) {
+			metafn.RequestHandler(msg)
+		})
+		if err != nil {
+			log.Printf("subscribe error: %s on %s\n", err.Error(), p.sdk.makeSubject(metafn.Method))
+			return
+		}
+		log.Printf("Meta Function Service : %s", p.sdk.makeSubject(metafn.Method))
+	}
+}
 func (p *Plugin) ActionsHandler() {
 	p.sdk.conn.Subscribe(p.sdk.makeActionsListSubject(), func(msg *nats.Msg) {
 		// Handle the actions list message

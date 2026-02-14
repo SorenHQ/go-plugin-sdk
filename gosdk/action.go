@@ -18,6 +18,7 @@ type Plugin struct {
 	Intro    models.PluginIntro
 	Settings *models.Settings
 	Actions  []models.Action
+	MetaFunc []models.Meta
 }
 
 func NewPlugin(sdk *SorenSDK) *Plugin {
@@ -46,6 +47,9 @@ func (p *Plugin) SetIntro(intro models.PluginIntro, handler func(msg *nats.Msg) 
 		p.Intro.Requirements.Handler = handler
 	}
 }
+func (p *Plugin) AddMetaFunction(method string , handler func(msg *nats.Msg)) {
+	p.MetaFunc = append(p.MetaFunc, models.Meta{Method: method,RequestHandler: handler})
+}
 func (p *Plugin) AddActions(actions []models.Action) {
 	p.Actions = append(p.Actions, actions...)
 }
@@ -59,6 +63,7 @@ func (p *Plugin) Start() error {
 		return err
 	}
 	p.ActionsHandler()
+	p.MetaFunchandler()
 	event := NewEventLogger(p.sdk)
 	actionsByte, _ := sonic.Marshal(p.Actions)
 	if len(actionsByte) > 0 {

@@ -22,12 +22,17 @@ type Requirements struct {
 // PluginAction represents a single plugin action
 // Subject: soren.v2.<PLUGIN_ID>.@actions
 type Action struct {
-	Method         string                  `json:"method"`
-	Description    string                  `json:"description"`
-	Title          string                  `json:"title"`
-	Icon           Icon                    `json:"icon"`
-	RequestHandler func(msg *nats.Msg)  `json:"-"`
-	Form           ActionFormBuilder       `json:"form"`
+	Method         string              `json:"method"`
+	Description    string              `json:"description"`
+	Title          string              `json:"title"`
+	Icon           Icon                `json:"icon"`
+	RequestHandler func(msg *nats.Msg) `json:"-"`
+	Form           ActionFormBuilder   `json:"form"`
+}
+
+type Meta struct {
+	Method         string              `json:"method"`
+	RequestHandler func(msg *nats.Msg) `json:"-"`
 }
 
 // Icon represents an icon for an action
@@ -39,11 +44,11 @@ type Icon struct {
 // Settings represents the settings form configuration
 // Subject: soren.v2.<PLUGIN_ID>.@settings
 type Settings struct {
-	ReplyTo    string         `json:"replyTo"`
-	Jsonui     map[string]any `json:"jsonui"`
-	Jsonschema map[string]any `json:"jsonschema"`
-	Data       map[string]any `json:"data"` // Current settings data
-	Handler func(msg *nats.Msg) any `json:"-"`
+	ReplyTo    string                  `json:"replyTo"`
+	Jsonui     map[string]any          `json:"jsonui"`
+	Jsonschema map[string]any          `json:"jsonschema"`
+	Data       map[string]any          `json:"data"` // Current settings data
+	Handler    func(msg *nats.Msg) any `json:"-"`
 }
 
 // ActionFormBuilder represents the action form configuration

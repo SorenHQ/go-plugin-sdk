@@ -30,7 +30,9 @@ func TestMain(t *testing.T) {
 		Version: "1.1.1",
 		Author:  "Soren Team",
 	}, nil)
-
+	plugin.AddMetaFunction("get.proj.enum",func(msg *nats.Msg) {
+		msg.Respond([]byte(`[1,2,3]`))
+	})
 	plugin.SetSettings(&models.Settings{
 		Jsonui: map[string]any{
 			"type": "VerticalLayout",
