@@ -62,3 +62,11 @@ func GetPlugin() *Plugin {
 
 }
 
+func Response(msg *nats.Msg, data ,error any) {
+	responseByte, err := sonic.Marshal(map[string]any{"data":data,"error":error})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	msg.Respond(responseByte)
+}
